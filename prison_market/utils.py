@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from PIL import Image
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from prisunion import settings
 
 
 def standardResponse(status, message, data, pagination=None, http_status=None):
@@ -90,3 +91,29 @@ class BaseViewSet(viewsets.ModelViewSet):
     def details(self, request, pk=None, **kwargs):
         # "pk" is the primary key of the order
         return self.retrieve(request, **kwargs)
+
+
+def send_notification(user_ids=None, message=None, all_users=False, additional_data=None):
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": f"Basic {settings.ONESIGNAL_REST_API_KEY}"
+    }
+
+    payload = {
+        "app_id": settings.ONESIGNAL_APP_ID,
+        "contents": {"en": message} if message else {},
+        "data": additional_data if additional_data else {}
+    }
+
+    # Targeting specific users or all users
+    if all_users:
+        payload["included_segments"] = ["All"]
+    elif user_ids:
+        payload["include_external_user_ids"] = user_ids
+    else:
+        raise ValueError(
+            "You must specify either user_ids or set all_users=True")
+
+    response = requests.post(
+        settings.ONE_SIGNAL_NOTIFICATION_URL, headers=headers, json=payload)
+    return response.json()

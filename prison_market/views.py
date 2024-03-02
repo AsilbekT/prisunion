@@ -319,7 +319,6 @@ class CreateFullOrderView(APIView):
             self.update_order_total(order)
 
         serializer = OrderSerializer(order)
-        notify_new_order(order.id)
         return standardResponse(status="success", message="Order placed successfully", data=serializer.data)
 
     def create_order(self, prisoner, contact):

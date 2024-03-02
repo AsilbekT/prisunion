@@ -1,6 +1,12 @@
 from django.contrib import admin
 from .models import CategoryBanner, PrisonerContact, Prison, Prisoner, Product, Order, OrderItem, ProductCategory
 from django.utils.html import format_html
+from django.contrib import admin
+from django_json_widget.widgets import JSONEditorWidget
+from django.contrib.postgres.fields import JSONField
+from django.db import models
+
+from .models import Notification
 
 
 @admin.register(Prison)
@@ -65,3 +71,10 @@ class ProductCategoryAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="max-height: 50px;"/>', obj.image.url)
         return "-"
     image_tag.short_description = 'Image'
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'recipient', 'message', 'all_users')
+    list_filter = ('all_users',)
+    search_fields = ('message',)

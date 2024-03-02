@@ -234,17 +234,23 @@ class VerifyLoginCodeView(views.APIView):
         try:
             prisoner_contact = PrisonerContact.objects.get(
                 phone_number=phone_number, phone_verification_code=verification_code)
-            user = prisoner_contact.user
+
             prisoner_contact.phone_verified = True
             prisoner_contact.phone_verification_code = ''
             prisoner_contact.save()
-
+            if not prisoner_contact.user:
+                data = {
+                    'refresh': None,
+                    'access': None,
+                }
             # Generate JWT token for authenticated user
-            refresh = RefreshToken.for_user(user)
-            data = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
+            else:
+                user = prisoner_contact.user
+                refresh = RefreshToken.for_user(user)
+                data = {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
             # Using standardResponse for success
             return standardResponse(status="success", message="Phone number verified successfully.", data=data)
         except PrisonerContact.DoesNotExist:

@@ -6,6 +6,8 @@ import json
 from django.utils.timezone import now
 from django.utils.html import escape
 
+from prison_market.utils import send_notification
+
 
 def send_message(chat_id, text):
     requests.post(f'{TELEGRAM_API_URL}/sendMessage',
@@ -144,6 +146,14 @@ def handle_callback_query(update):
             if new_status != order.status:
                 order.status = new_status
                 order.save()
+
+                send_notification(
+                    order.ordered_by.push_notification_user_id,
+                    message=f"status of order changed to {new_status}",
+                    additional_data={
+                        {"order_id": order_id}
+                    }
+                )
 
             # Reconstruct the message text from order details
             items_details, message = construct_order_message(order)

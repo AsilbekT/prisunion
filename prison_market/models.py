@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from billing.models import Transaction
+from django.db.models import JSONField
 
 
 class Prison(models.Model):
@@ -166,10 +167,15 @@ class AuditRecord(models.Model):
 class Notification(models.Model):
     recipient = models.ForeignKey(
         PrisonerContact, on_delete=models.CASCADE, related_name='notifications')
-    title = models.CharField(max_length=255)
     message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    read = models.BooleanField(default=False)
+    all_users = models.BooleanField(
+        default=False, help_text="Send notification to all users.")
+    additional_data = JSONField(
+        blank=True, null=True, help_text="JSON structure for additional data.")
 
     def __str__(self):
-        return self.title
+        return f"Notification #{self.id}"
+
+    class Meta:
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"

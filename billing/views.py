@@ -7,6 +7,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from django.core.cache import cache
 from billing.serializers import TransactionSerializer
+from logs_bot.utils import notify_new_order
 from prison_market.models import Order
 from prison_market.utils import standardResponse
 from prisunion import settings
@@ -172,6 +173,7 @@ class PayTransactionView(BasePaymentView):
             if order:
                 order.payment_status = "completed"
                 order.save()
+                notify_new_order(order.id)
 
             # Returning a successful response
             return Response({
